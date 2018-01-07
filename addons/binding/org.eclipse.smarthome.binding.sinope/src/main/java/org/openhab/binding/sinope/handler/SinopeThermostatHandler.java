@@ -1,14 +1,13 @@
 /**
+ * Copyright (c) 2017-2018 by the respective copyright holders.
  *
- *  Copyright (c) 2017 by the respective copyright holders.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  *
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
- *
- *  @author Pascal Larin
- *  https://github.com/chaton78
+ * @author Pascal Larin
+ * https://github.com/chaton78
  *
 */
 
@@ -30,7 +29,7 @@ import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.sinope.SinopeBindingConstants;
-import org.openhab.binding.sinope.config.SinopeConfig;
+import org.openhab.binding.sinope.internal.config.SinopeConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -222,8 +221,7 @@ public class SinopeThermostatHandler extends BaseThingHandler {
             this.updateHeatingLevel(readHeatLevel(gateway, deviceId));
 
         } else {
-            logger.error(
-                    String.format("Device id is invalid: %s  for Thing UID: %s", getDeviceId(), getThing().getUID()));
+            logger.error("Device id is invalid: {}  for Thing UID: {}", getDeviceId(), getThing().getUID());
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR);
         }
 
@@ -237,7 +235,7 @@ public class SinopeThermostatHandler extends BaseThingHandler {
 
         SinopeDataAnswer answ = (SinopeDataAnswer) gateway.execute(req);
         double temp = ((SinopeRoomTempData) answ.getAppData()).getRoomTemp() / 100.0;
-        logger.debug(String.format("Room temp is : %2.2f C", temp));
+        logger.debug("Room temp is : {} C", temp);
         return temp;
     }
 
@@ -247,7 +245,7 @@ public class SinopeThermostatHandler extends BaseThingHandler {
         logger.debug("Reading outside temp for device id: {}", ByteUtil.toString(deviceId));
         SinopeDataAnswer answ = (SinopeDataAnswer) gateway.execute(req);
         double temp = ((SinopeOutTempData) answ.getAppData()).getOutTemp() / 100.0;
-        logger.debug(String.format("Outside temp is : %2.2f C", temp));
+        logger.debug("Outside temp is : {} C", temp);
         return temp;
 
     }
@@ -258,7 +256,7 @@ public class SinopeThermostatHandler extends BaseThingHandler {
         logger.debug("Reading Set Point temp for device id: {}", ByteUtil.toString(deviceId));
         SinopeDataAnswer answ = (SinopeDataAnswer) gateway.execute(req);
         double temp = ((SinopeSetPointTempData) answ.getAppData()).getSetPointTemp() / 100.0;
-        logger.debug(String.format("Set Point temp is : %2.2f C", temp));
+        logger.debug("Setpoint temp is : {} C", temp);
         return temp;
     }
 
@@ -268,7 +266,7 @@ public class SinopeThermostatHandler extends BaseThingHandler {
         logger.debug("Reading Set Point mode for device id: {}", ByteUtil.toString(deviceId));
         SinopeDataAnswer answ = (SinopeDataAnswer) gateway.execute(req);
         int mode = ((SinopeSetPointModeData) answ.getAppData()).getSetPointMode();
-        logger.debug(String.format("Set Point mode is : %d", mode));
+        logger.debug("Setpoint mode is : {}", mode);
         return mode;
     }
 
@@ -277,7 +275,7 @@ public class SinopeThermostatHandler extends BaseThingHandler {
         logger.debug("Reading Heat Level for device id: {}", ByteUtil.toString(deviceId));
         SinopeDataAnswer answ = (SinopeDataAnswer) gateway.execute(req);
         int level = ((SinopeHeatLevelData) answ.getAppData()).getHeatLevel();
-        logger.debug(String.format("Heat level is  : %d", level));
+        logger.debug("Heating level is  : {}", level);
         return level;
     }
 

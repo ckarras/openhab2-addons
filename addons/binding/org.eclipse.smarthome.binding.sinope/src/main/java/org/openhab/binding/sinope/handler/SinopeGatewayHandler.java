@@ -1,14 +1,13 @@
 /**
+ * Copyright (c) 2017-2018 by the respective copyright holders.
  *
- *  Copyright (c) 2017 by the respective copyright holders.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  *
- *  All rights reserved. This program and the accompanying materials
- *  are made available under the terms of the Eclipse Public License v1.0
- *  which accompanies this distribution, and is available at
- *  http://www.eclipse.org/legal/epl-v10.html
- *
- *  @author Pascal Larin
- *  https://github.com/chaton78
+ * @author Pascal Larin
+ * https://github.com/chaton78
  *
 */
 package org.openhab.binding.sinope.handler;
@@ -35,8 +34,8 @@ import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.binding.ConfigStatusBridgeHandler;
 import org.eclipse.smarthome.core.types.Command;
 import org.openhab.binding.sinope.SinopeBindingConstants;
-import org.openhab.binding.sinope.config.SinopeConfig;
 import org.openhab.binding.sinope.internal.SinopeConfigStatusMessage;
+import org.openhab.binding.sinope.internal.config.SinopeConfig;
 import org.openhab.binding.sinope.internal.discovery.SinopeThingsDiscoveryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -196,7 +195,8 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
 
     public boolean registerThermostatHandler(SinopeThermostatHandler thermostatHandler) {
         if (thermostatHandler == null) {
-            throw new NullPointerException("It's not allowed to pass a null thermostatHandler.");
+            logger.error("It's not allowed to pass a null thermostatHandler.");
+            return false;
         }
         boolean result = thermostatHandlers.add(thermostatHandler);
         if (result) {
