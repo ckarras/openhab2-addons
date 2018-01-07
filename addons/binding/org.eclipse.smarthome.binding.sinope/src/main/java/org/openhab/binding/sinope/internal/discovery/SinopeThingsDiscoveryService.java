@@ -69,13 +69,13 @@ public class SinopeThingsDiscoveryService extends AbstractDiscoveryService {
 
     @Override
     protected synchronized void stopScan() {
+        super.stopScan();
+        removeOlderResults(getTimestampOfLastScan());
         try {
             sinopeGatewayHandler.stopSearch();
         } catch (IOException e) {
             logger.error("Can't stop search with an exception", e);
         } finally {
-            super.stopScan();
-            removeOlderResults(getTimestampOfLastScan());
             logger.info("Sinope Things scan stopped");
         }
     }

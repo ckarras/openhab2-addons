@@ -257,39 +257,34 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
             pollFuture.cancel(false);
         }
 
-        scheduler.schedule(new Runnable() {
-            @Override
-            public void run() {
+        try {
+            if (connectToBridge()) {
+                logger.info("Successful login");
                 try {
-                    if (connectToBridge()) {
-                        logger.info("Successful login");
-                        try {
-                            while (clientSocket.isConnected()) {
-                                SinopeDeviceReportAnswer answ;
-                                answ = new SinopeDeviceReportAnswer(clientSocket.getInputStream());
-                                logger.debug("Got report answer: {}", answ);
-                                logger.debug("Your device id is: {}", ByteUtil.toString(answ.getDeviceId()));
-                                sinopeThingsDiscoveryService.newThermostat(answ.getDeviceId());
-                            }
-
-                        } finally {
-                            clientSocket.close();
-                            clientSocket = null;
-                            schedulePoll();
-                        }
+                    while (clientSocket.isConnected() && !clientSocket.isClosed()) {
+                        SinopeDeviceReportAnswer answ;
+                        answ = new SinopeDeviceReportAnswer(clientSocket.getInputStream());
+                        logger.debug("Got report answer: {}", answ);
+                        logger.debug("Your device id is: {}", ByteUtil.toString(answ.getDeviceId()));
+                        sinopeThingsDiscoveryService.newThermostat(answ.getDeviceId());
                     }
-                } catch (IOException e) {
-                    logger.error("Cannot complete search with exception", e);
+                } finally {
+                    if (clientSocket != null && !clientSocket.isClosed()) {
+                        clientSocket.close();
+                        clientSocket = null;
+                    }
                 }
-
             }
-        }, 0, TimeUnit.SECONDS);
+        } finally {
+            schedulePoll();
+        }
 
     }
 
     public void stopSearch() throws IOException {
         if (this.clientSocket != null && this.clientSocket.isConnected()) {
             this.clientSocket.close();
+            this.clientSocket = null;
         }
 
     }
