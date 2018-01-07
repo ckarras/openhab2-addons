@@ -4,12 +4,10 @@ layout: documentation
 
 {% include base.html %}
 
-__Please note__ 
-Until this fork is merged into the smarthome master, you can download the binding jar here: https://github.com/chaton78/smarthome/releases/tag/sinope-0.0.9-snapshot
 
 # OpenHab2 / Eclipse SmartHome Bindings for Sinopé device. 
 
-This binding supports [Eclipse SmartHome API] (<https://www.eclipse.org/smarthome/index.html>). The integration happens through the Sinopé (GT150) bridge, which acts as an IP gateway to the Sinopé devices on the 916 Mhz ISM band.
+This binding supports [Eclipse SmartHome API] (<https://www.eclipse.org/smarthome/index.html>) but it is build for Openhab2. The integration happens through the Sinopé (GT150) bridge, which acts as an IP gateway to the Sinopé devices on the 916 Mhz ISM band.
 
 This binding supports multiple gateways with multiple devices.
 
