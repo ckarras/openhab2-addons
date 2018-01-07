@@ -101,11 +101,7 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
         }
     }
 
-    void pollNow() {
-        schedulePoll();
-    }
-
-    void schedulePoll() {
+    synchronized void schedulePoll() {
         if (pollFuture != null) {
             pollFuture.cancel(false);
         }
@@ -143,7 +139,7 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
 
     boolean connectToBridge() throws UnknownHostException, IOException {
         SinopeConfig config = getConfigAs(SinopeConfig.class);
-        if (this.clientSocket == null || !this.clientSocket.isConnected()) {
+        if (this.clientSocket == null || !this.clientSocket.isConnected() || this.clientSocket.isClosed()) {
             this.clientSocket = new Socket(config.hostname, config.port);
             SinopeApiLoginRequest loginRequest = new SinopeApiLoginRequest(SinopeConfig.convert(config.gatewayId),
                     SinopeConfig.convert(config.apiKey));
@@ -169,10 +165,15 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
 
     }
 
-    SinopeAnswer execute(SinopeDataRequest command) throws UnknownHostException, IOException {
+    synchronized SinopeAnswer execute(SinopeDataRequest command) throws UnknownHostException, IOException {
         Socket clientSocket = this.getClientSocket();
+
         OutputStream outToServer = clientSocket.getOutputStream();
         InputStream inputStream = clientSocket.getInputStream();
+        int leftBytes = inputStream.available();
+        if (leftBytes > 0) {
+            logger.error("Hum... some left overs: {} bytes", leftBytes);
+        }
 
         outToServer.write(command.getPayload());
 

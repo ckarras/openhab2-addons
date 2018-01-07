@@ -49,7 +49,7 @@ import ca.tulip.sinope.util.ByteUtil;
  *
  * @author Pascal Larin - Initial contribution
  */
-public class SinopeThermostatHandler extends BaseThingHandler {
+public class SinopeThermostatHandler extends BaseThingHandler implements ThingHandler {
 
     private Logger logger = LoggerFactory.getLogger(SinopeThermostatHandler.class);
     private String deviceId;
@@ -87,13 +87,19 @@ public class SinopeThermostatHandler extends BaseThingHandler {
     public void setSetpointTemp(SinopeThermostatHandler sinopeThermostatHandler, float temp)
             throws UnknownHostException, IOException {
         int newTemp = (int) (temp * 100.0);
+        byte[] deviceId = SinopeConfig.convert(sinopeThermostatHandler.getDeviceId());
+        if (deviceId == null) {
+            logger.error("Invalid Device id: {}", deviceId);
+            updateStatus(ThingStatus.UNINITIALIZED);
+            return;
+        }
         SinopeGatewayHandler gateway = getSinopeGatewayHandler();
         gateway.stopPoll();
 
         if (gateway.connectToBridge()) {
 
             logger.debug("Connected to bridge");
-            byte[] deviceId = SinopeConfig.convert(sinopeThermostatHandler.getDeviceId());
+
             SinopeDataWriteRequest req = new SinopeDataWriteRequest(gateway.newSeq(), deviceId,
                     new SinopeSetPointTempData());
             ((SinopeSetPointTempData) req.getAppData()).setSetPointTemp(newTemp);
@@ -113,13 +119,19 @@ public class SinopeThermostatHandler extends BaseThingHandler {
 
     public void setSetpointMode(SinopeThermostatHandler sinopeThermostatHandler, int mode)
             throws UnknownHostException, IOException {
+        byte[] deviceId = SinopeConfig.convert(sinopeThermostatHandler.getDeviceId());
+        if (deviceId == null) {
+            logger.error("Invalid Device id: {}", deviceId);
+            updateStatus(ThingStatus.UNINITIALIZED);
+            return;
+        }
 
         SinopeGatewayHandler gateway = getSinopeGatewayHandler();
         gateway.stopPoll();
 
         if (gateway.connectToBridge()) {
             logger.debug("Connected to bridge");
-            byte[] deviceId = SinopeConfig.convert(sinopeThermostatHandler.getDeviceId());
+
             SinopeDataWriteRequest req = new SinopeDataWriteRequest(gateway.newSeq(), deviceId,
                     new SinopeSetPointModeData());
             ((SinopeSetPointModeData) req.getAppData()).setSetPointMode((byte) mode);
@@ -139,26 +151,19 @@ public class SinopeThermostatHandler extends BaseThingHandler {
     }
 
     @Override
-    public void initialize() {
-        logger.debug("Initializing Sinopé Thermostat");
-
-        Bridge bridge = getBridge();
-        initializeThing((bridge == null) ? null : bridge.getStatus());
-
+    public void bridgeStatusChanged(ThingStatusInfo bridgeStatusInfo) {
+        logger.debug("bridgeStatusChanged {}", bridgeStatusInfo);
+        updateStatus(bridgeStatusInfo.getStatus());
     }
 
     @Override
-    public void bridgeStatusChanged(ThingStatusInfo bridgeStatusInfo) {
-        logger.debug("bridgeStatusChanged {}", bridgeStatusInfo);
-        initializeThing(bridgeStatusInfo.getStatus());
-    }
+    public void initialize() {
 
-    private void initializeThing(ThingStatus bridgeStatus) {
-        logger.debug("initializeThing thing {} bridge status {}", getThing().getUID(), bridgeStatus);
+        logger.debug("initializeThing thing {}", getThing().getUID());
         String configDeviceId = (String) getConfig().get(SinopeBindingConstants.CONFIG_PROPERTY_DEVICE_ID);
         if (configDeviceId != null) {
             this.deviceId = configDeviceId;
-            if (getSinopeGatewayHandler() != null && bridgeStatus == ThingStatus.ONLINE) {
+            if (getSinopeGatewayHandler() != null) {
                 updateStatus(ThingStatus.ONLINE);
             } else {
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE);
@@ -186,7 +191,7 @@ public class SinopeThermostatHandler extends BaseThingHandler {
     }
 
     public String getDeviceId() {
-        return deviceId;
+        return (String) getConfig().get(SinopeBindingConstants.CONFIG_PROPERTY_DEVICE_ID);
     }
 
     public void updateOutsideTemp(double temp) {
@@ -203,7 +208,7 @@ public class SinopeThermostatHandler extends BaseThingHandler {
     }
 
     public void updateSetPointMode(int mode) {
-        updateState(SinopeBindingConstants.CHANNEL_SETMODE, new StringType(Integer.toString(mode)));
+        updateState(SinopeBindingConstants.CHANNEL_SETMODE, new DecimalType(mode));
     }
 
     public void updateHeatingLevel(int heatingLevel) {
