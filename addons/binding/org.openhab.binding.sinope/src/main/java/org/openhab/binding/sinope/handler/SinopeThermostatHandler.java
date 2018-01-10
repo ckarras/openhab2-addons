@@ -52,7 +52,6 @@ import ca.tulip.sinope.util.ByteUtil;
 public class SinopeThermostatHandler extends BaseThingHandler implements ThingHandler {
 
     private Logger logger = LoggerFactory.getLogger(SinopeThermostatHandler.class);
-    private String deviceId;
 
     private SinopeGatewayHandler gatewayHandler;
 
@@ -63,25 +62,34 @@ public class SinopeThermostatHandler extends BaseThingHandler implements ThingHa
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
         Channel channel = getThing().getChannel(channelUID.getId());
-        if (channel != null && SinopeBindingConstants.CHANNEL_SETTEMP.equals(channelUID.getId())) {
-            try {
+        SinopeGatewayHandler gateway = getSinopeGatewayHandler();
+        gateway.stopPoll();
+        try {
+            if (channel != null && SinopeBindingConstants.CHANNEL_SETTEMP.equals(channelUID.getId())) {
                 if (command instanceof DecimalType) {
                     setSetpointTemp(this, ((DecimalType) command).floatValue());
+                } else {
+                    logger.error("Cannot handle command for channel {} because of invalid command type {}",
+                            channelUID.getId(), command);
                 }
-            } catch (IOException e) {
-                logger.error("Cannot set point temp: {}", e.getLocalizedMessage());
             }
-        }
 
-        if (channel != null && SinopeBindingConstants.CHANNEL_SETMODE.equals(channelUID.getId())) {
-            try {
+            if (channel != null && SinopeBindingConstants.CHANNEL_SETMODE.equals(channelUID.getId())) {
                 if (command instanceof StringType) {
                     setSetpointMode(this, Integer.parseInt(((StringType) command).toString()));
+                } else {
+                    logger.error("Cannot handle command for channel {} because of invalid command type {}",
+                            channelUID.getId(), command);
                 }
-            } catch (IOException e) {
-                logger.error("Cannot set point mode: {}", e.getLocalizedMessage());
+
             }
+        } catch (IOException e) {
+            logger.error("Cannot handle command for channel {} because of {}", channelUID.getId(),
+                    e.getLocalizedMessage());
+            gateway.setCommunicationError(true);
+
         }
+        gateway.schedulePoll();
     }
 
     public void setSetpointTemp(SinopeThermostatHandler sinopeThermostatHandler, float temp)
@@ -93,9 +101,8 @@ public class SinopeThermostatHandler extends BaseThingHandler implements ThingHa
             updateStatus(ThingStatus.UNINITIALIZED);
             return;
         }
-        SinopeGatewayHandler gateway = getSinopeGatewayHandler();
-        gateway.stopPoll();
 
+        SinopeGatewayHandler gateway = getSinopeGatewayHandler();
         if (gateway.connectToBridge()) {
 
             logger.debug("Connected to bridge");
@@ -114,7 +121,7 @@ public class SinopeThermostatHandler extends BaseThingHandler implements ThingHa
         } else {
             logger.error("Could not connect to bridge to update Setpoint Temp");
         }
-        gateway.schedulePoll();
+
     }
 
     public void setSetpointMode(SinopeThermostatHandler sinopeThermostatHandler, int mode)
@@ -162,7 +169,6 @@ public class SinopeThermostatHandler extends BaseThingHandler implements ThingHa
         logger.debug("initializeThing thing {}", getThing().getUID());
         String configDeviceId = (String) getConfig().get(SinopeBindingConstants.CONFIG_PROPERTY_DEVICE_ID);
         if (configDeviceId != null) {
-            this.deviceId = configDeviceId;
             if (getSinopeGatewayHandler() != null) {
                 updateStatus(ThingStatus.ONLINE);
             } else {
