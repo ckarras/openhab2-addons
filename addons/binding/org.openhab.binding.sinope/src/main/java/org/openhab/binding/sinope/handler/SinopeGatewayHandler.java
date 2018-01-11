@@ -83,6 +83,7 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
         } else {
             refreshInterval = config.refresh;
             schedulePoll();
+            updateStatus(ThingStatus.ONLINE);
         }
 
     }

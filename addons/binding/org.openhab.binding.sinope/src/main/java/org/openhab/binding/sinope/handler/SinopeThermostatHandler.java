@@ -65,23 +65,14 @@ public class SinopeThermostatHandler extends BaseThingHandler implements ThingHa
         SinopeGatewayHandler gateway = getSinopeGatewayHandler();
         gateway.stopPoll();
         try {
-            if (channel != null && SinopeBindingConstants.CHANNEL_SETTEMP.equals(channelUID.getId())) {
-                if (command instanceof DecimalType) {
-                    setSetpointTemp(this, ((DecimalType) command).floatValue());
-                } else {
-                    logger.error("Cannot handle command for channel {} because of invalid command type {}",
-                            channelUID.getId(), command);
-                }
+            if (channel != null && SinopeBindingConstants.CHANNEL_SETTEMP.equals(channelUID.getId())
+                    && command instanceof DecimalType) {
+                setSetpointTemp(this, ((DecimalType) command).floatValue());
             }
 
-            if (channel != null && SinopeBindingConstants.CHANNEL_SETMODE.equals(channelUID.getId())) {
-                if (command instanceof StringType) {
-                    setSetpointMode(this, Integer.parseInt(((StringType) command).toString()));
-                } else {
-                    logger.error("Cannot handle command for channel {} because of invalid command type {}",
-                            channelUID.getId(), command);
-                }
-
+            if (channel != null && SinopeBindingConstants.CHANNEL_SETMODE.equals(channelUID.getId())
+                    && command instanceof StringType) {
+                setSetpointMode(this, Integer.parseInt(((StringType) command).toString()));
             }
         } catch (IOException e) {
             logger.error("Cannot handle command for channel {} because of {}", channelUID.getId(),
