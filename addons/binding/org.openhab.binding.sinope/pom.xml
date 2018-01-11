@@ -17,11 +17,11 @@
 	<packaging>eclipse-plugin</packaging>
 
 	<dependencies>
-		<dependency>
+		<!-- Included in lib directory - dependency>
 			<groupId>ca.tulip.sinope</groupId>
 			<artifactId>core</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
+		</dependency -->
 	</dependencies>
 	<organization>
 		<name>Pascal Larin</name>
