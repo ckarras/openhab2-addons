@@ -10,6 +10,7 @@
 			<parameter name="hostname" type="text">
 				<label>Hostname</label>
 				<description>Hostname of the Sinopé Gateway</description>
+				<context>network-address</context>
 				<required>true</required>
 			</parameter>
 
