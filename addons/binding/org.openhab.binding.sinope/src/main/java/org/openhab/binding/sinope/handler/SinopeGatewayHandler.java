@@ -125,7 +125,7 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
                     }
                 }
             } catch (IOException e) {
-                logger.error("Could not connect to gateway", e);
+                logger.error("Could not connect to gateway, will retry in {} s", refreshInterval, e);
                 setCommunicationError(true);
             }
         } else {
@@ -288,7 +288,7 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
             clientSocket = null;
         } else {
             updateStatus(ThingStatus.ONLINE);
+            schedulePoll();
         }
-
     }
 }

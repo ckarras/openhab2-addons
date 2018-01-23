@@ -73,8 +73,9 @@ public class SinopeThermostatHandler extends BaseThingHandler {
             logger.debug("Cannot handle command for channel {} because of {}", channelUID.getId(),
                     e.getLocalizedMessage());
             gateway.setCommunicationError(true);
+        } finally {
+            gateway.schedulePoll();
         }
-        gateway.schedulePoll();
     }
 
     public void setSetpointTemp(float temp) throws UnknownHostException, IOException {
