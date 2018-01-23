@@ -52,9 +52,10 @@ import ca.tulip.sinope.util.ByteUtil;
  */
 public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
 
+    private static final int FIRST_POLL_INTERVAL = 1; // In second
     private final Logger logger = LoggerFactory.getLogger(SinopeGatewayHandler.class);
     private ScheduledFuture<?> pollFuture;
-    private long refreshInterval;
+    private long refreshInterval; // In seconds
     private final List<SinopeThermostatHandler> thermostatHandlers = new CopyOnWriteArrayList<>();
     private int seq = 1;
     private Socket clientSocket;
@@ -101,8 +102,9 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
         if (pollFuture != null) {
             pollFuture.cancel(false);
         }
-        logger.debug("Scheduling poll for 500ms out, then every {} ms", refreshInterval);
-        pollFuture = scheduler.scheduleAtFixedRate(pollingRunnable, 500, refreshInterval, TimeUnit.MILLISECONDS);
+        logger.debug("Scheduling poll for 1s out, then every {} s", refreshInterval);
+        pollFuture = scheduler.scheduleAtFixedRate(pollingRunnable, FIRST_POLL_INTERVAL, refreshInterval,
+                TimeUnit.SECONDS);
     }
 
     synchronized void stopPoll() {
@@ -125,8 +127,6 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
             } catch (IOException e) {
                 logger.error("Could not connect to gateway", e);
                 setCommunicationError(true);
-            } finally {
-
             }
         } else {
             logger.debug("nothing to poll");
@@ -167,21 +167,20 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
 
         OutputStream outToServer = clientSocket.getOutputStream();
         InputStream inputStream = clientSocket.getInputStream();
-        int leftBytes = inputStream.available();
-        if (leftBytes > 0) {
-            logger.error("Hum... some left overs: {} bytes", leftBytes);
+        if (logger.isDebugEnabled()) {
+            int leftBytes = inputStream.available();
+            if (leftBytes > 0) {
+                logger.debug("Hum... some leftovers: {} bytes", leftBytes);
+            }
         }
-
         outToServer.write(command.getPayload());
 
         SinopeDataAnswer answ = command.getReplyAnswer(inputStream);
 
         while (answ.getMore() == 0x01) {
             answ = command.getReplyAnswer(inputStream);
-
         }
         return answ;
-
     }
 
     private Runnable pollingRunnable = new Runnable() {
@@ -196,19 +195,11 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
             logger.error("It's not allowed to pass a null thermostatHandler.");
             return false;
         }
-        boolean result = thermostatHandlers.add(thermostatHandler);
-        if (result) {
-            schedulePoll();
-        }
-        return result;
+        return thermostatHandlers.add(thermostatHandler);
     }
 
     public boolean unregisterThermostatHandler(SinopeThermostatHandler thermostatHandler) {
-        boolean result = thermostatHandlers.remove(thermostatHandler);
-        if (result) {
-            schedulePoll();
-        }
-        return result;
+        return thermostatHandlers.remove(thermostatHandler);
     }
 
     @Override
@@ -254,7 +245,7 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
 
         try {
             if (connectToBridge()) {
-                logger.info("Successful login");
+                logger.debug("Successful login");
                 try {
                     while (clientSocket.isConnected() && !clientSocket.isClosed()) {
                         SinopeDeviceReportAnswer answ;

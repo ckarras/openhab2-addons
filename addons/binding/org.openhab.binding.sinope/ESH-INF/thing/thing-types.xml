@@ -13,31 +13,25 @@
 				<context>network-address</context>
 				<required>true</required>
 			</parameter>
-
 			<parameter name="port" type="integer">
 				<label>Port</label>
 				<description>The port that the Sinopé Gateway listens on</description>
-				<required>true</required>
 				<default>4550</default>
 			</parameter>
-
 			<parameter name="gatewayId" type="text">
 				<label>Gateway ID</label>
 				<description>The Sinopé gateway ID (as printed on the back-side, e.g. "xxxx xxxx xxxx xxxx")</description>
 				<required>true</required>
 			</parameter>
-
-
 			<parameter name="apiKey" type="text">
 				<label>API Key</label>
-				<description>Use sinope-core application to generate your api key (see readme.md)</description>
+				<description>Use sinope-core application to generate your api key</description>
 				<required>true</required>
 			</parameter>
-
 			<parameter name="refresh" type="integer" required="false">
 				<label>Refresh Interval</label>
 				<description>The number of milliseconds between fetches from the Sinopé Gateway.</description>
-				<default>60000</default>
+				<default>60</default>
 			</parameter>
 		</config-description>
 	</bridge-type>
@@ -48,7 +42,6 @@
 		</supported-bridge-type-refs>
 		<label>Sinopé Thermostat</label>
 		<description>Sinopé Thermostat control</description>
-
 		<channels>
 			<channel id="insideTemperature" typeId="insideTemperature" />
 			<channel id="outsideTemperature" typeId="outsideTemperature" />
@@ -57,13 +50,11 @@
 			<channel id="heatingLevel" typeId="heatingLevel" />
 		</channels>
 		<config-description>
-
 			<parameter name="deviceId" type="text" required="true">
 				<label>Thermostat device ID</label>
 			</parameter>
 		</config-description>
 	</thing-type>
-
 
 	<channel-type id="insideTemperature">
 		<item-type>Number</item-type>
@@ -113,7 +104,7 @@
 		<item-type>Dimmer</item-type>
 		<label>Heat Level</label>
 		<description>Heating Level</description>
-		<category>Energy</category>
+		<category>Heating</category>
 		<state min="0" max="100" step="1" pattern="%d %%" readOnly="true" />
 	</channel-type>
 </thing:thing-descriptions>

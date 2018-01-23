@@ -20,18 +20,20 @@ import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
+import org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory;
 import org.openhab.binding.sinope.SinopeBindingConstants;
 import org.openhab.binding.sinope.handler.SinopeGatewayHandler;
 import org.openhab.binding.sinope.handler.SinopeThermostatHandler;
 import org.openhab.binding.sinope.internal.discovery.SinopeThingsDiscoveryService;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.component.annotations.Component;
 
 /**
  * {@link SinopeHandlerFactory} is a factory for {@link SinopeThermostatHandler}s and {@link SinopeGatewayHandler}s
  *
  * @author Pascal Larin - Initial contribution
  */
-
+@Component(service = ThingHandlerFactory.class, immediate = true)
 public class SinopeHandlerFactory extends BaseThingHandlerFactory {
 
     private final static Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = SinopeBindingConstants.SUPPORTED_THING_TYPES_UIDS;
@@ -44,7 +46,6 @@ public class SinopeHandlerFactory extends BaseThingHandlerFactory {
 
     @Override
     protected ThingHandler createHandler(Thing thing) {
-
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
         if (SinopeBindingConstants.THING_TYPE_GATEWAY.equals(thingTypeUID)) {
@@ -54,7 +55,6 @@ public class SinopeHandlerFactory extends BaseThingHandlerFactory {
         } else if (SinopeBindingConstants.THING_TYPE_THERMO.equals(thingTypeUID)) {
             return new SinopeThermostatHandler(thing);
         }
-
         return null;
     }
 
@@ -76,5 +76,4 @@ public class SinopeHandlerFactory extends BaseThingHandlerFactory {
             }
         }
     }
-
 }

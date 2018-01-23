@@ -54,11 +54,11 @@ public class SinopeThingsDiscoveryService extends AbstractDiscoveryService {
 
     @Override
     public void startScan() {
-        logger.info("Sinope Things starting scan");
+        logger.debug("Sinope Things starting scan");
         try {
             sinopeGatewayHandler.startSearch(this);
         } catch (IOException e) {
-            logger.error("Search failed with an exception", e);
+            logger.debug("Search failed with an exception", e);
         }
     }
 
@@ -69,9 +69,9 @@ public class SinopeThingsDiscoveryService extends AbstractDiscoveryService {
         try {
             sinopeGatewayHandler.stopSearch();
         } catch (IOException e) {
-            logger.error("Can't stop search with an exception", e);
+            logger.debug("Can't stop search with an exception", e);
         } finally {
-            logger.info("Sinope Things scan stopped");
+            logger.debug("Sinope Things scan stopped");
         }
     }
 
@@ -86,17 +86,13 @@ public class SinopeThingsDiscoveryService extends AbstractDiscoveryService {
                 .withProperty(SinopeBindingConstants.CONFIG_PROPERTY_DEVICE_ID, ByteUtil.toString(deviceId)).build();
 
         thingDiscovered(discoveryResult);
-
     }
 
     private static String toUID(byte[] deviceId) {
-
         StringBuilder sb = new StringBuilder();
         for (byte b : deviceId) {
             sb.append(String.format("%02X", b));
         }
         return sb.toString();
-
     }
-
 }

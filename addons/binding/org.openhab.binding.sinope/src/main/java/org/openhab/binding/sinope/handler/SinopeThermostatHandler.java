@@ -11,10 +11,10 @@ package org.openhab.binding.sinope.handler;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.core.library.types.DecimalType;
-import org.eclipse.smarthome.core.library.types.StringType;
 import org.eclipse.smarthome.core.thing.Bridge;
-import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingStatus;
@@ -44,11 +44,15 @@ import ca.tulip.sinope.util.ByteUtil;
  *
  * @author Pascal Larin - Initial contribution
  */
-public class SinopeThermostatHandler extends BaseThingHandler implements ThingHandler {
+public class SinopeThermostatHandler extends BaseThingHandler {
+
+    private static final int DATA_ANSWER = 0x0A;
 
     private Logger logger = LoggerFactory.getLogger(SinopeThermostatHandler.class);
 
     private SinopeGatewayHandler gatewayHandler;
+
+    private byte[] deviceId;
 
     public SinopeThermostatHandler(Thing thing) {
         super(thing);
@@ -56,91 +60,65 @@ public class SinopeThermostatHandler extends BaseThingHandler implements ThingHa
 
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
-        Channel channel = getThing().getChannel(channelUID.getId());
-        SinopeGatewayHandler gateway = getSinopeGatewayHandler();
+        SinopeGatewayHandler gateway = this.gatewayHandler;
         gateway.stopPoll();
         try {
-            if (channel != null && SinopeBindingConstants.CHANNEL_SETTEMP.equals(channelUID.getId())
-                    && command instanceof DecimalType) {
-                setSetpointTemp(this, ((DecimalType) command).floatValue());
+            if (SinopeBindingConstants.CHANNEL_SETTEMP.equals(channelUID.getId()) && command instanceof DecimalType) {
+                setSetpointTemp(((DecimalType) command).floatValue());
             }
-
-            if (channel != null && SinopeBindingConstants.CHANNEL_SETMODE.equals(channelUID.getId())
-                    && command instanceof StringType) {
-                setSetpointMode(this, Integer.parseInt(((StringType) command).toString()));
+            if (SinopeBindingConstants.CHANNEL_SETMODE.equals(channelUID.getId()) && command instanceof DecimalType) {
+                setSetpointMode(((DecimalType) command).intValue());
             }
         } catch (IOException e) {
-            logger.error("Cannot handle command for channel {} because of {}", channelUID.getId(),
+            logger.debug("Cannot handle command for channel {} because of {}", channelUID.getId(),
                     e.getLocalizedMessage());
             gateway.setCommunicationError(true);
-
         }
         gateway.schedulePoll();
     }
 
-    public void setSetpointTemp(SinopeThermostatHandler sinopeThermostatHandler, float temp)
-            throws UnknownHostException, IOException {
+    public void setSetpointTemp(float temp) throws UnknownHostException, IOException {
         int newTemp = (int) (temp * 100.0);
-        byte[] deviceId = SinopeConfig.convert(sinopeThermostatHandler.getDeviceId());
-        if (deviceId == null) {
-            logger.error("Invalid Device id: {}", deviceId);
-            updateStatus(ThingStatus.UNINITIALIZED);
-            return;
-        }
 
-        SinopeGatewayHandler gateway = getSinopeGatewayHandler();
-        if (gateway.connectToBridge()) {
-
+        if (this.gatewayHandler.connectToBridge()) {
             logger.debug("Connected to bridge");
 
-            SinopeDataWriteRequest req = new SinopeDataWriteRequest(gateway.newSeq(), deviceId,
+            SinopeDataWriteRequest req = new SinopeDataWriteRequest(this.gatewayHandler.newSeq(), deviceId,
                     new SinopeSetPointTempData());
             ((SinopeSetPointTempData) req.getAppData()).setSetPointTemp(newTemp);
 
-            SinopeDataAnswer answ = (SinopeDataAnswer) gateway.execute(req);
+            SinopeDataAnswer answ = (SinopeDataAnswer) this.gatewayHandler.execute(req);
 
-            if (answ.getStatus() == 0) {
-                logger.debug("Setpoint temp is now: {} C", newTemp);
+            if (answ.getStatus() == DATA_ANSWER) {
+                logger.debug("Setpoint temp is now: {} C", temp);
             } else {
                 logger.debug("Cannot Setpoint temp, status: {}", answ.getStatus());
             }
         } else {
             logger.error("Could not connect to bridge to update Setpoint Temp");
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "Cannot connect to bridge");
         }
-
     }
 
-    public void setSetpointMode(SinopeThermostatHandler sinopeThermostatHandler, int mode)
-            throws UnknownHostException, IOException {
-        byte[] deviceId = SinopeConfig.convert(sinopeThermostatHandler.getDeviceId());
-        if (deviceId == null) {
-            logger.error("Invalid Device id: {}", deviceId);
-            updateStatus(ThingStatus.UNINITIALIZED);
-            return;
-        }
-
-        SinopeGatewayHandler gateway = getSinopeGatewayHandler();
-        gateway.stopPoll();
-
-        if (gateway.connectToBridge()) {
+    public void setSetpointMode(int mode) throws UnknownHostException, IOException {
+        if (this.gatewayHandler.connectToBridge()) {
             logger.debug("Connected to bridge");
 
-            SinopeDataWriteRequest req = new SinopeDataWriteRequest(gateway.newSeq(), deviceId,
+            SinopeDataWriteRequest req = new SinopeDataWriteRequest(this.gatewayHandler.newSeq(), deviceId,
                     new SinopeSetPointModeData());
             ((SinopeSetPointModeData) req.getAppData()).setSetPointMode((byte) mode);
 
-            SinopeDataAnswer answ = (SinopeDataAnswer) gateway.execute(req);
+            SinopeDataAnswer answ = (SinopeDataAnswer) this.gatewayHandler.execute(req);
 
-            if (answ.getStatus() == 0) {
+            if (answ.getStatus() == DATA_ANSWER) {
                 logger.debug("Setpoint mode is now : {}", mode);
             } else {
                 logger.debug("Cannot Setpoint mode, status: {}", answ.getStatus());
             }
         } else {
-            logger.error("Could not connect to bridge to update Setpoint Mode");
+            logger.error("Could not connect to bridge to update Setpoint Temp");
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "Cannot connect to bridge");
         }
-        gateway.schedulePoll();
-
     }
 
     @Override
@@ -151,44 +129,18 @@ public class SinopeThermostatHandler extends BaseThingHandler implements ThingHa
 
     @Override
     public void initialize() {
-
         logger.debug("initializeThing thing {}", getThing().getUID());
-        String configDeviceId = (String) getConfig().get(SinopeBindingConstants.CONFIG_PROPERTY_DEVICE_ID);
-        if (configDeviceId != null) {
-            if (getSinopeGatewayHandler() != null) {
-                updateStatus(ThingStatus.ONLINE);
-            } else {
-                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE);
-            }
-        } else {
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Device ID not set");
-        }
+        updateDeviceId();
     }
 
-    private synchronized SinopeGatewayHandler getSinopeGatewayHandler() {
-        if (this.gatewayHandler == null) {
-            Bridge bridge = getBridge();
-            if (bridge == null) {
-                return null;
-            }
-            ThingHandler handler = bridge.getHandler();
-            if (handler instanceof SinopeGatewayHandler) {
-                this.gatewayHandler = (SinopeGatewayHandler) handler;
-                this.gatewayHandler.registerThermostatHandler(this);
-            } else {
-                return null;
-            }
-        }
-        return this.gatewayHandler;
-    }
-
-    public String getDeviceId() {
-        return (String) getConfig().get(SinopeBindingConstants.CONFIG_PROPERTY_DEVICE_ID);
+    @Override
+    protected void updateConfiguration(Configuration configuration) {
+        super.updateConfiguration(configuration);
+        updateDeviceId();
     }
 
     public void updateOutsideTemp(double temp) {
         updateState(SinopeBindingConstants.CHANNEL_OUTTEMP, new DecimalType(temp));
-
     }
 
     public void updateRoomTemp(double temp) {
@@ -208,72 +160,102 @@ public class SinopeThermostatHandler extends BaseThingHandler implements ThingHa
     }
 
     public void update() throws UnknownHostException, IOException {
-        byte[] deviceId = SinopeConfig.convert(this.getDeviceId());
-        SinopeGatewayHandler gateway = getSinopeGatewayHandler();
-        if (deviceId != null && deviceId.length > 0) {
-            this.updateOutsideTemp(readOutsideTemp(gateway, deviceId));
-            this.updateRoomTemp(readRoomTemp(gateway, deviceId));
-            this.updateSetPointTemp(readSetpointTemp(gateway, deviceId));
-            this.updateSetPointMode(readSetpointMode(gateway, deviceId));
-            this.updateHeatingLevel(readHeatLevel(gateway, deviceId));
-
+        if (this.deviceId != null) {
+            if (isLinked(SinopeBindingConstants.CHANNEL_OUTTEMP)) {
+                this.updateOutsideTemp(readOutsideTemp());
+            }
+            if (isLinked(SinopeBindingConstants.CHANNEL_INTEMP)) {
+                this.updateRoomTemp(readRoomTemp());
+            }
+            if (isLinked(SinopeBindingConstants.CHANNEL_SETTEMP)) {
+                this.updateSetPointTemp(readSetpointTemp());
+            }
+            if (isLinked(SinopeBindingConstants.CHANNEL_SETMODE)) {
+                this.updateSetPointMode(readSetpointMode());
+            }
+            if (isLinked(SinopeBindingConstants.CHANNEL_HEATINGLEVEL)) {
+                this.updateHeatingLevel(readHeatLevel());
+            }
         } else {
-            logger.error("Device id is invalid: {}  for Thing UID: {}", getDeviceId(), getThing().getUID());
+            logger.error("Device id is null for Thing UID: {}", this.deviceId, getThing().getUID());
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR);
         }
-
     }
 
-    private double readRoomTemp(SinopeGatewayHandler gateway, byte[] deviceId)
-            throws UnknownHostException, IOException {
+    private double readRoomTemp() throws UnknownHostException, IOException {
         logger.debug("Reading room temp for device id : {}", ByteUtil.toString(deviceId));
-
-        SinopeDataReadRequest req = new SinopeDataReadRequest(gateway.newSeq(), deviceId, new SinopeRoomTempData());
-
-        SinopeDataAnswer answ = (SinopeDataAnswer) gateway.execute(req);
+        SinopeDataReadRequest req = new SinopeDataReadRequest(this.gatewayHandler.newSeq(), deviceId,
+                new SinopeRoomTempData());
+        SinopeDataAnswer answ = (SinopeDataAnswer) this.gatewayHandler.execute(req);
         double temp = ((SinopeRoomTempData) answ.getAppData()).getRoomTemp() / 100.0;
         logger.debug("Room temp is : {} C", temp);
         return temp;
     }
 
-    private double readOutsideTemp(SinopeGatewayHandler gateway, byte[] deviceId)
-            throws UnknownHostException, IOException {
-        SinopeDataReadRequest req = new SinopeDataReadRequest(gateway.newSeq(), deviceId, new SinopeOutTempData());
+    private double readOutsideTemp() throws UnknownHostException, IOException {
+        SinopeDataReadRequest req = new SinopeDataReadRequest(this.gatewayHandler.newSeq(), deviceId,
+                new SinopeOutTempData());
         logger.debug("Reading outside temp for device id: {}", ByteUtil.toString(deviceId));
-        SinopeDataAnswer answ = (SinopeDataAnswer) gateway.execute(req);
+        SinopeDataAnswer answ = (SinopeDataAnswer) this.gatewayHandler.execute(req);
         double temp = ((SinopeOutTempData) answ.getAppData()).getOutTemp() / 100.0;
         logger.debug("Outside temp is : {} C", temp);
         return temp;
-
     }
 
-    private double readSetpointTemp(SinopeGatewayHandler gateway, byte[] deviceId)
-            throws UnknownHostException, IOException {
-        SinopeDataReadRequest req = new SinopeDataReadRequest(gateway.newSeq(), deviceId, new SinopeSetPointTempData());
+    private double readSetpointTemp() throws UnknownHostException, IOException {
+        SinopeDataReadRequest req = new SinopeDataReadRequest(this.gatewayHandler.newSeq(), deviceId,
+                new SinopeSetPointTempData());
         logger.debug("Reading Set Point temp for device id: {}", ByteUtil.toString(deviceId));
-        SinopeDataAnswer answ = (SinopeDataAnswer) gateway.execute(req);
+        SinopeDataAnswer answ = (SinopeDataAnswer) this.gatewayHandler.execute(req);
         double temp = ((SinopeSetPointTempData) answ.getAppData()).getSetPointTemp() / 100.0;
         logger.debug("Setpoint temp is : {} C", temp);
         return temp;
     }
 
-    private int readSetpointMode(SinopeGatewayHandler gateway, byte[] deviceId)
-            throws UnknownHostException, IOException {
-        SinopeDataReadRequest req = new SinopeDataReadRequest(gateway.newSeq(), deviceId, new SinopeSetPointModeData());
+    private int readSetpointMode() throws UnknownHostException, IOException {
+        SinopeDataReadRequest req = new SinopeDataReadRequest(this.gatewayHandler.newSeq(), deviceId,
+                new SinopeSetPointModeData());
         logger.debug("Reading Set Point mode for device id: {}", ByteUtil.toString(deviceId));
-        SinopeDataAnswer answ = (SinopeDataAnswer) gateway.execute(req);
+        SinopeDataAnswer answ = (SinopeDataAnswer) this.gatewayHandler.execute(req);
         int mode = ((SinopeSetPointModeData) answ.getAppData()).getSetPointMode();
         logger.debug("Setpoint mode is : {}", mode);
         return mode;
     }
 
-    private int readHeatLevel(SinopeGatewayHandler gateway, byte[] deviceId) throws UnknownHostException, IOException {
-        SinopeDataReadRequest req = new SinopeDataReadRequest(gateway.newSeq(), deviceId, new SinopeHeatLevelData());
+    private int readHeatLevel() throws UnknownHostException, IOException {
+        SinopeDataReadRequest req = new SinopeDataReadRequest(this.gatewayHandler.newSeq(), deviceId,
+                new SinopeHeatLevelData());
         logger.debug("Reading Heat Level for device id: {}", ByteUtil.toString(deviceId));
-        SinopeDataAnswer answ = (SinopeDataAnswer) gateway.execute(req);
+        SinopeDataAnswer answ = (SinopeDataAnswer) this.gatewayHandler.execute(req);
         int level = ((SinopeHeatLevelData) answ.getAppData()).getHeatLevel();
         logger.debug("Heating level is  : {}", level);
         return level;
     }
 
+    private void updateDeviceId() {
+        String sDeviceId = (String) getConfig().get(SinopeBindingConstants.CONFIG_PROPERTY_DEVICE_ID);
+        this.deviceId = SinopeConfig.convert(sDeviceId);
+        if (this.deviceId == null) {
+            logger.error("Invalid Device id, cannot convert id: {}", sDeviceId);
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, "Invalid Device id");
+            return;
+        }
+        Bridge bridge = this.getBridge();
+        if (bridge == null) {
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE);
+            return;
+        }
+        if (this.gatewayHandler == null && ThingStatus.ONLINE.equals(bridge.getStatus())) {
+            updateSinopeGatewayHandler(bridge);
+        }
+        updateStatus(ThingStatus.ONLINE);
+    }
+
+    private synchronized void updateSinopeGatewayHandler(@NonNull Bridge bridge) {
+        ThingHandler handler = bridge.getHandler();
+        if (handler instanceof SinopeGatewayHandler) {
+            this.gatewayHandler = (SinopeGatewayHandler) handler;
+            this.gatewayHandler.registerThermostatHandler(this);
+        }
+    }
 }

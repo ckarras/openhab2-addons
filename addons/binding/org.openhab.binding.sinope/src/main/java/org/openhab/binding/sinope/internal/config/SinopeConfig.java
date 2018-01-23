@@ -32,7 +32,7 @@ public class SinopeConfig {
      */
     public String apiKey;
     /**
-     * The number of milliseconds between fetches from the sinope deivces
+     * The number of seconds between fetches from the sinope deivces
      */
     public Integer refresh;
 
@@ -48,6 +48,11 @@ public class SinopeConfig {
         _value = _value.replace("-", "");
         _value = _value.replace("0x", "");
         _value = _value.replace(" ", "");
+
+        if (_value.length() == 0) {
+            return null;
+        }
+
         if (_value.length() % 2 == 0 && _value.length() > 1) {
             byte[] b = new byte[_value.length() / 2];
 
