@@ -11,7 +11,6 @@ package org.openhab.binding.sinope.handler;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.thing.Bridge;
@@ -178,7 +177,7 @@ public class SinopeThermostatHandler extends BaseThingHandler {
                 this.updateHeatingLevel(readHeatLevel());
             }
         } else {
-            logger.error("Device id is null for Thing UID: {}", this.deviceId, getThing().getUID());
+            logger.error("Device id is null for Thing UID: {}", getThing().getUID());
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR);
         }
     }
@@ -252,7 +251,7 @@ public class SinopeThermostatHandler extends BaseThingHandler {
         updateStatus(ThingStatus.ONLINE);
     }
 
-    private synchronized void updateSinopeGatewayHandler(@NonNull Bridge bridge) {
+    private synchronized void updateSinopeGatewayHandler(Bridge bridge) {
         ThingHandler handler = bridge.getHandler();
         if (handler instanceof SinopeGatewayHandler) {
             this.gatewayHandler = (SinopeGatewayHandler) handler;

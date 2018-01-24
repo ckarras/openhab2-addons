@@ -102,7 +102,7 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
         if (pollFuture != null) {
             pollFuture.cancel(false);
         }
-        logger.debug("Scheduling poll for 1s out, then every {} s", refreshInterval);
+        logger.debug("Scheduling poll for {} s out, then every {} s", FIRST_POLL_INTERVAL, refreshInterval);
         pollFuture = scheduler.scheduleAtFixedRate(pollingRunnable, FIRST_POLL_INTERVAL, refreshInterval,
                 TimeUnit.SECONDS);
     }
@@ -125,7 +125,8 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
                     }
                 }
             } catch (IOException e) {
-                logger.error("Could not connect to gateway, will retry in {} s", refreshInterval, e);
+                logger.error("Could not connect to gateway, will retry in {} s", refreshInterval);
+                logger.debug("Polling issue", e);
                 setCommunicationError(true);
             }
         } else {
