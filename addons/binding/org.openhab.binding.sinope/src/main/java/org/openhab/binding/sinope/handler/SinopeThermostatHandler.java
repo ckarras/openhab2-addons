@@ -13,6 +13,8 @@ import java.net.UnknownHostException;
 
 import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.core.library.types.DecimalType;
+import org.eclipse.smarthome.core.library.types.QuantityType;
+import org.eclipse.smarthome.core.library.unit.SIUnits;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
@@ -140,15 +142,15 @@ public class SinopeThermostatHandler extends BaseThingHandler {
     }
 
     public void updateOutsideTemp(double temp) {
-        updateState(SinopeBindingConstants.CHANNEL_OUTTEMP, new DecimalType(temp));
+        updateState(SinopeBindingConstants.CHANNEL_OUTTEMP, new QuantityType<>(temp, SIUnits.CELSIUS));
     }
 
     public void updateRoomTemp(double temp) {
-        updateState(SinopeBindingConstants.CHANNEL_INTEMP, new DecimalType(temp));
+        updateState(SinopeBindingConstants.CHANNEL_INTEMP, new QuantityType<>(temp, SIUnits.CELSIUS));
     }
 
     public void updateSetPointTemp(double temp) {
-        updateState(SinopeBindingConstants.CHANNEL_SETTEMP, new DecimalType(temp));
+        updateState(SinopeBindingConstants.CHANNEL_SETTEMP, new QuantityType<>(temp, SIUnits.CELSIUS));
     }
 
     public void updateSetPointMode(int mode) {
