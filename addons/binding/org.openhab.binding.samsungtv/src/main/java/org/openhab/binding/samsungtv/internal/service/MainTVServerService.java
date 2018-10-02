@@ -8,7 +8,7 @@
  */
 package org.openhab.binding.samsungtv.internal.service;
 
-import static org.openhab.binding.samsungtv.SamsungTvBindingConstants.*;
+import static org.openhab.binding.samsungtv.internal.SamsungTvBindingConstants.*;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -117,22 +117,18 @@ public class MainTVServerService implements UpnpIOParticipant, SamsungTvService 
         return true;
     }
 
-    private Runnable pollingRunnable = new Runnable() {
+    private Runnable pollingRunnable = () -> {
+        if (isRegistered()) {
+            try {
+                updateResourceState("MainTVAgent2", "GetCurrentMainTVChannel", null);
 
-        @Override
-        public void run() {
-            if (isRegistered()) {
-                try {
-                    updateResourceState("MainTVAgent2", "GetCurrentMainTVChannel", null);
+                updateResourceState("MainTVAgent2", "GetCurrentExternalSource", null);
 
-                    updateResourceState("MainTVAgent2", "GetCurrentExternalSource", null);
+                updateResourceState("MainTVAgent2", "GetCurrentContentRecognition", null);
 
-                    updateResourceState("MainTVAgent2", "GetCurrentContentRecognition", null);
-
-                    updateResourceState("MainTVAgent2", "GetCurrentBrowserURL", null);
-                } catch (Exception e) {
-                    reportError("Error occurred during poll", e);
-                }
+                updateResourceState("MainTVAgent2", "GetCurrentBrowserURL", null);
+            } catch (Exception e) {
+                reportError("Error occurred during poll", e);
             }
         }
     };

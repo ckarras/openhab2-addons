@@ -19,8 +19,8 @@ import org.eclipse.smarthome.config.discovery.DiscoveryResultBuilder;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.thing.ThingUID;
-import org.openhab.binding.zway.ZWayBindingConstants;
-import org.openhab.binding.zway.handler.ZWayBridgeHandler;
+import org.openhab.binding.zway.internal.ZWayBindingConstants;
+import org.openhab.binding.zway.internal.handler.ZWayBridgeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -211,8 +211,8 @@ public class ZWayDeviceDiscoveryService extends AbstractDiscoveryService {
     protected void startBackgroundDiscovery() {
         if (mZWayDeviceScanningJob == null || mZWayDeviceScanningJob.isCancelled()) {
             logger.debug("Starting background scanning job");
-            mZWayDeviceScanningJob = AbstractDiscoveryService.scheduler.scheduleWithFixedDelay(
-                    mZWayDeviceScanningRunnable, INITIAL_DELAY, SCAN_INTERVAL, TimeUnit.SECONDS);
+            mZWayDeviceScanningJob = scheduler.scheduleWithFixedDelay(mZWayDeviceScanningRunnable, INITIAL_DELAY,
+                    SCAN_INTERVAL, TimeUnit.SECONDS);
         } else {
             logger.debug("Scanning job is allready active");
         }

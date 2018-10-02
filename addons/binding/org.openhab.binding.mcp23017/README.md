@@ -15,19 +15,19 @@ mcp23017 - which is a mcp23017 chip connected to a I2C bus on specified HEX addr
 
 * Required configuration for mcp23017 thing:
 
-    address - MCP23017 I2C bus address. On Raspberry PI it can be checked as a result of command: "i2cdetect -y 1". Value should be set in HEX.
-        Default value is "20"
-    bus_number - a bus number to which mcp23017 is connected. On RPI2 and RPI3 it will be "1", on RPI1 it will be "0".
-        Default value is "1"    
+ | Parameter  | Description                                                                                                                       | Default value |
+|------------|-----------------------------------------------------------------------------------------------------------------------------------|---------------|
+| address    | MCP23017 I2C bus address. On Raspberry PI it can be checked as a result of command: "i2cdetect -y 1". Value should be set in HEX. | "20"          |
+| bus_number | a bus number to which mcp23017 is connected. On RPI2 and RPI3 it will be "1", on RPI1 it will be "0".                             | "1"           |
 
 ## Channels
 
 mcp23017 supports 16 channels in 2 groups:
 
- | Group |                       Channels                           |           Additional parameters           |
- |  ---  |                          ---                             |                      ---                  |
- | input | A0, A1, A2, A3, A4, A5, A6, B0, B1, B2, B3, B4, B5, B6   | pull_mode (OFF, PULL_UP), default is OFF  |
- | output| A0, A1, A2, A3, A4, A5, A6, B0, B1, B2, B3, B4, B5, B6   | default_state (LOW, HIGH), defauld is LOW |
+ | Group |                       Channels                                   |           Additional parameters           |
+ |  ---  |                          ---                                     |                      ---                  |
+ | input | A0, A1, A2, A3, A4, A5, A6, A7, B0, B1, B2, B3, B4, B5, B6, B7   | pull_mode (OFF, PULL_UP), default is OFF  |
+ | output| A0, A1, A2, A3, A4, A5, A6, A7, B0, B1, B2, B3, B4, B5, B6, B7   | default_state (LOW, HIGH), default is LOW |
 
  Channel determines MCP23017 PIN we want to use.
 
@@ -50,8 +50,20 @@ Let's imagine a setup with:
 
 *   Things:
 
+Minimal configuration:
 ```
 Thing mcp23017:mcp23017:chipA  "MCP23017 chip A" [address=20,bus=1]
+```
+
+Configuration with default_state and pull_mode:
+```
+Thing mcp23017:mcp23017:chipA  "MCP23017 chip A" [address=20,bus=1] {
+    Type output_pin : output#A0 [default_state="HIGH"]
+    Type output_pin : output#A1 [default_state="LOW"]
+
+    Type input_pin : input#B0 [pull_mode="PULL_UP"]
+    Type input_pin : input#B1 [pull_mode="OFF"]
+}
 ```
 
 *   Items:
@@ -61,7 +73,8 @@ Switch living_room_led_switch "Living room led switch"  {channel="mcp23017:mcp23
 Contact living_room_led_contact "Living room led contact"  {channel="mcp23017:mcp23017:chipA:input#B1"}
 ```
 
-*   Rules
+*   Rules:
+
 ```
 rule "living_room_led contact"
 when

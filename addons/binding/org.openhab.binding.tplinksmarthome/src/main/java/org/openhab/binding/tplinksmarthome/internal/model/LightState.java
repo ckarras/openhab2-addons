@@ -29,11 +29,11 @@ public class LightState extends ErrorResponse {
     private int saturation;
 
     public PercentType getBrightness() {
-        return new PercentType(brightness);
+        return onOff > 0 ? new PercentType(brightness) : PercentType.ZERO;
     }
 
-    public DecimalType getColorTemp() {
-        return new DecimalType(colorTemp);
+    public int getColorTemp() {
+        return colorTemp;
     }
 
     public DecimalType getHue() {

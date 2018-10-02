@@ -18,10 +18,10 @@ import org.eclipse.smarthome.config.discovery.DiscoveryResultBuilder;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
-import org.openhab.binding.pulseaudio.PulseaudioBindingConstants;
-import org.openhab.binding.pulseaudio.handler.DeviceStatusListener;
-import org.openhab.binding.pulseaudio.handler.PulseaudioBridgeHandler;
-import org.openhab.binding.pulseaudio.handler.PulseaudioHandler;
+import org.openhab.binding.pulseaudio.internal.PulseaudioBindingConstants;
+import org.openhab.binding.pulseaudio.internal.handler.DeviceStatusListener;
+import org.openhab.binding.pulseaudio.internal.handler.PulseaudioBridgeHandler;
+import org.openhab.binding.pulseaudio.internal.handler.PulseaudioHandler;
 import org.openhab.binding.pulseaudio.internal.items.AbstractAudioDeviceConfig;
 import org.openhab.binding.pulseaudio.internal.items.Sink;
 import org.openhab.binding.pulseaudio.internal.items.SinkInput;
@@ -66,7 +66,7 @@ public class PulseaudioDeviceDiscoveryService extends AbstractDiscoveryService i
         String uidName = device.getPaName();
         logger.debug("device {} found", device);
         ThingTypeUID thingType = null;
-        Map<String, Object> properties = new HashMap<String, Object>();
+        Map<String, Object> properties = new HashMap<>();
         // All devices need this parameter
         properties.put(PulseaudioBindingConstants.DEVICE_PARAMETER_NAME, uidName);
         if (device instanceof Sink) {

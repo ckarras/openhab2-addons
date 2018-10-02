@@ -8,8 +8,8 @@
  */
 package org.openhab.binding.netatmo.internal.welcome;
 
-import static org.openhab.binding.netatmo.NetatmoBindingConstants.*;
 import static org.openhab.binding.netatmo.internal.ChannelTypeUtils.*;
+import static org.openhab.binding.netatmo.internal.NetatmoBindingConstants.*;
 
 import java.util.Calendar;
 import java.util.Optional;
@@ -23,8 +23,8 @@ import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.types.State;
 import org.eclipse.smarthome.core.types.UnDefType;
 import org.eclipse.smarthome.io.net.http.HttpUtil;
-import org.openhab.binding.netatmo.handler.AbstractNetatmoThingHandler;
-import org.openhab.binding.netatmo.handler.NetatmoDeviceHandler;
+import org.openhab.binding.netatmo.internal.handler.AbstractNetatmoThingHandler;
+import org.openhab.binding.netatmo.internal.handler.NetatmoDeviceHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +59,7 @@ public class NAWelcomeHomeHandler extends NetatmoDeviceHandler<NAWelcomeHome> {
         if (homeDataBody != null) {
             // data time stamp is updated to now as WelcomeDataBody does not provide any information according to this
             // need
-            dataTimeStamp = (int) Calendar.getInstance().getTimeInMillis() / 1000;
+            dataTimeStamp = (int) (Calendar.getInstance().getTimeInMillis() / 1000);
             result = homeDataBody.getHomes().stream().filter(device -> device.getId().equalsIgnoreCase(getId()))
                     .findFirst().orElse(null);
             if (result != null) {
