@@ -4,9 +4,8 @@ layout: documentation
 
 {% include base.html %}
 
-# Binding for Sinopé devices
+# Sinopé Binding
 
-This binding supports [Eclipse SmartHome API] (<https://www.eclipse.org/smarthome/index.html>).
 The integration happens through the Sinopé (GT150) bridge, which acts as an IP gateway to the Sinopé devices on the 916 Mhz ISM band.
 
 This binding supports multiple gateways with multiple devices.
@@ -21,12 +20,14 @@ Right now, only the thermostat devices (3000W and 4000W) (TH1120RF) are supporte
 
 ## Discovery
 
-The Sinopé Gateway (bridge) discovery is not supported for now. It will be added in future release.
+The Sinopé Gateway (bridge) discovery is not supported for now. 
+It will be added in future release.
 The Sinopé devices discovery is implemented. 
 
 ## Prerequisites
 
 ### Bridge or the Sinopé Gateway 
+
 First, you will need to get your API key from your Sinopé gateway.
 
 Grab the latest release of the [sinope-core library](<https://github.com/chaton78/sinope-core/releases>)
@@ -142,4 +143,4 @@ sitemap demo label="Main Menu"
 ```
 ### UI Example
 
-![Example](doc/OpenHab.png)
+![Example](doc/openhab.png)

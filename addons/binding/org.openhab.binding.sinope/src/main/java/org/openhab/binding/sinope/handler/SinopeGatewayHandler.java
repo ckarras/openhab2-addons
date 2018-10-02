@@ -103,7 +103,7 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
             pollFuture.cancel(false);
         }
         logger.debug("Scheduling poll for {} s out, then every {} s", FIRST_POLL_INTERVAL, refreshInterval);
-        pollFuture = scheduler.scheduleAtFixedRate(pollingRunnable, FIRST_POLL_INTERVAL, refreshInterval,
+        pollFuture = scheduler.scheduleAtFixedRate(() -> poll(), FIRST_POLL_INTERVAL, refreshInterval,
                 TimeUnit.SECONDS);
     }
 
@@ -125,9 +125,8 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
                     }
                 }
             } catch (IOException e) {
-                logger.error("Could not connect to gateway, will retry in {} s", refreshInterval);
-                logger.debug("Polling issue", e);
                 setCommunicationError(true);
+                logger.debug("Polling issue", e);
             }
         } else {
             logger.debug("nothing to poll");
@@ -183,13 +182,6 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
         }
         return answ;
     }
-
-    private Runnable pollingRunnable = new Runnable() {
-        @Override
-        public void run() {
-            poll();
-        }
-    };
 
     public boolean registerThermostatHandler(SinopeThermostatHandler thermostatHandler) {
         if (thermostatHandler == null) {

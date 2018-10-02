@@ -76,13 +76,13 @@ public class SinopeThingsDiscoveryService extends AbstractDiscoveryService {
     }
 
     public void newThermostat(byte[] deviceId) {
-        logger.info("Sinope Things service discovered a new device with id: {}", ByteUtil.toString(deviceId));
+        logger.debug("Sinope Things service discovered a new device with id: {}", ByteUtil.toString(deviceId));
         ThingTypeUID thingTypeUID = SinopeBindingConstants.THING_TYPE_THERMO;
         ThingUID bridgeUID = sinopeGatewayHandler.getThing().getUID();
         ThingUID thingUID = new ThingUID(thingTypeUID, bridgeUID, toUID(deviceId));
 
         DiscoveryResult discoveryResult = DiscoveryResultBuilder.create(thingUID).withThingType(thingTypeUID)
-                .withBridge(bridgeUID)
+                .withBridge(bridgeUID).withLabel("Device-" + deviceId)
                 .withProperty(SinopeBindingConstants.CONFIG_PROPERTY_DEVICE_ID, ByteUtil.toString(deviceId)).build();
 
         thingDiscovered(discoveryResult);
