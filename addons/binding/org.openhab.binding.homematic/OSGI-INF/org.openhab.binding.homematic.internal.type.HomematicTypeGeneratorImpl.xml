@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="initialize" immediate="true" name="org.openhab.binding.homematic.internal.type.HomematicTypeGeneratorImpl">
+   <service>
+      <provide interface="org.openhab.binding.homematic.internal.type.HomematicTypeGenerator"/>
+   </service>
+   <reference bind="setChannelTypeProvider" interface="org.openhab.binding.homematic.internal.type.HomematicChannelTypeProvider" name="ChannelTypeProvider" unbind="unsetChannelTypeProvider"/>
+   <reference bind="setConfigDescriptionProvider" interface="org.openhab.binding.homematic.internal.type.HomematicConfigDescriptionProvider" name="ConfigDescriptionProvider" unbind="unsetConfigDescriptionProvider"/>
+   <reference bind="setThingTypeProvider" interface="org.openhab.binding.homematic.internal.type.HomematicThingTypeProvider" name="ThingTypeProvider" unbind="unsetThingTypeProvider"/>
+   <implementation class="org.openhab.binding.homematic.internal.type.HomematicTypeGeneratorImpl"/>
+</scr:component>

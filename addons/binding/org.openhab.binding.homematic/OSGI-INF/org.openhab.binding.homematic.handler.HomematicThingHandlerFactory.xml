@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.2.0" configuration-pid="binding.homematic" configuration-policy="optional" immediate="true" name="org.openhab.binding.homematic.handler.HomematicThingHandlerFactory">
+   <service>
+      <provide interface="org.eclipse.smarthome.core.thing.binding.ThingHandlerFactory"/>
+   </service>
+   <reference bind="setNetworkAddressService" interface="org.eclipse.smarthome.core.net.NetworkAddressService" name="NetworkAddressService" unbind="unsetNetworkAddressService"/>
+   <reference bind="setTypeGenerator" interface="org.openhab.binding.homematic.internal.type.HomematicTypeGenerator" name="TypeGenerator" unbind="unsetTypeGenerator"/>
+   <implementation class="org.openhab.binding.homematic.handler.HomematicThingHandlerFactory"/>
+</scr:component>
