@@ -64,7 +64,7 @@ public class SinopeThermostatHandler extends BaseThingHandler {
 
         try {
             if (SinopeBindingConstants.CHANNEL_SETTEMP.equals(channelUID.getId()) && command instanceof QuantityType) {
-                setSetpointTemp(((DecimalType) command).floatValue());
+                setSetpointTemp(((QuantityType<?>) command).floatValue());
             }
             if (SinopeBindingConstants.CHANNEL_SETMODE.equals(channelUID.getId()) && command instanceof DecimalType) {
                 setSetpointMode(((DecimalType) command).intValue());

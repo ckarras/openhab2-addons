@@ -43,7 +43,7 @@ public class SinopeThingsDiscoveryService extends AbstractDiscoveryService {
     private SinopeGatewayHandler sinopeGatewayHandler;
 
     public SinopeThingsDiscoveryService(SinopeGatewayHandler sinopeGatewayHandler) {
-        super(SEARCH_TIME);
+        super(SinopeBindingConstants.SUPPORTED_THING_TYPES_UIDS, SEARCH_TIME);
         this.sinopeGatewayHandler = sinopeGatewayHandler;
     }
 
@@ -54,6 +54,7 @@ public class SinopeThingsDiscoveryService extends AbstractDiscoveryService {
 
     @Override
     public void startScan() {
+
         logger.debug("Sinope Things starting scan");
         try {
             sinopeGatewayHandler.startSearch(this);
@@ -82,7 +83,7 @@ public class SinopeThingsDiscoveryService extends AbstractDiscoveryService {
         ThingUID thingUID = new ThingUID(thingTypeUID, bridgeUID, toUID(deviceId));
 
         DiscoveryResult discoveryResult = DiscoveryResultBuilder.create(thingUID).withThingType(thingTypeUID)
-                .withBridge(bridgeUID).withLabel("Device-" + deviceId)
+                .withBridge(bridgeUID).withLabel("Device-Sinope")
                 .withProperty(SinopeBindingConstants.CONFIG_PROPERTY_DEVICE_ID, ByteUtil.toString(deviceId)).build();
 
         thingDiscovered(discoveryResult);

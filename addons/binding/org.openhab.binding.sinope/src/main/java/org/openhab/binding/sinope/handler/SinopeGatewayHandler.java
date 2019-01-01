@@ -59,6 +59,8 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
     private final List<SinopeThermostatHandler> thermostatHandlers = new CopyOnWriteArrayList<>();
     private int seq = 1;
     private Socket clientSocket;
+    private boolean searching; // In searching mode..
+    private ScheduledFuture<?> pollSearch;
 
     public SinopeGatewayHandler(Bridge bridge) {
         super(bridge);
@@ -99,6 +101,9 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
     }
 
     synchronized void schedulePoll() {
+        if (searching) {
+            return;
+        }
         if (pollFuture != null) {
             pollFuture.cancel(false);
         }
@@ -235,7 +240,13 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
             throws UnknownHostException, IOException {
         // Stopping current polling
         stopPoll();
+        this.searching = true;
+        pollSearch = scheduler.schedule(() -> search(sinopeThingsDiscoveryService), FIRST_POLL_INTERVAL,
+                TimeUnit.SECONDS);
 
+    }
+
+    private void search(final SinopeThingsDiscoveryService sinopeThingsDiscoveryService) {
         try {
             if (connectToBridge()) {
                 logger.debug("Successful login");
@@ -254,18 +265,28 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
                     }
                 }
             }
+        } catch (UnknownHostException e) {
+            logger.warn("Unexpected error when searching for new devices", e);
+        } catch (IOException e) {
+
+            logger.debug("Network connection error, expected when ending search", e);
         } finally {
             schedulePoll();
         }
-
     }
 
     public void stopSearch() throws IOException {
+        this.searching = false;
+        if (this.pollSearch != null && !this.pollSearch.isCancelled()) {
+            this.pollSearch.cancel(true);
+            this.pollSearch = null;
+        }
         if (this.clientSocket != null && this.clientSocket.isConnected()) {
             this.clientSocket.close();
             this.clientSocket = null;
         }
 
+        schedulePoll();
     }
 
     public Socket getClientSocket() throws UnknownHostException, IOException {
@@ -283,5 +304,6 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
             updateStatus(ThingStatus.ONLINE);
             schedulePoll();
         }
+
     }
 }
