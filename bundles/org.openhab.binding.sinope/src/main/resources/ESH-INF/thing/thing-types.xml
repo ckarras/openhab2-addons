@@ -64,7 +64,6 @@
 		<description>Sinopé Dimmer control</description>
 		<channels>
 			<channel id="dimmerOutputIntensity" typeId="dimmerOutputIntensity" />
-			<channel id="lightMode" typeId="dimmerLightMode" />
 		</channels>
 		<config-description>
 			<parameter name="deviceId" type="text" required="true">
@@ -131,21 +130,6 @@
 		<description>Output Intensity</description>
 		<category>Light</category>
 		<state min="0" max="100" step="1" pattern="%d %%" readOnly="false" />
-	</channel-type>
-
-	<channel-type id="dimmerLightMode">
-		<item-type>Number</item-type>
-		<label>Dimmer Light Mode</label>
-		<description>Dimmer Light mode</description>
-		<category>Light</category>
-		<state pattern="%s" readOnly="false">
-			<options>
-				<option value="1">Manual (Hold)</option>
-				<option value="2">Auto (Schedule)</option>
-				<option value="3">Random (Simulation of presence)</option>
-				<option value="130">Bypass Auto (Temporary hold until the next scheduled period)</option>
-			</options>
-		</state>
 	</channel-type>
 
 </thing:thing-descriptions>
