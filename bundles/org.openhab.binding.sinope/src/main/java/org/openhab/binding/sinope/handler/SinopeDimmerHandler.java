@@ -79,7 +79,10 @@ public class SinopeDimmerHandler extends BaseThingHandler {
                 SinopeDataAnswer answ = (SinopeDataAnswer) this.getSinopeGatewayHandler().execute(req);
 
                 if (answ.getStatus() == DATA_ANSWER) {
-                    logger.debug("Output intensity is now: {} %%", outputIntensity);
+                    int answOutputIntensity = ((SinopeOutputIntensityData) answ.getAppData()).getOutputIntensity();
+                    updateDimmerOutputIntensity(outputIntensity);
+                    logger.debug("Output intensity is now: {} %%", answOutputIntensity);
+
                 } else {
                     logger.debug("Cannot set output intensity, status: {}", answ.getStatus());
                 }

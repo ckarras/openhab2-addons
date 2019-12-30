@@ -215,10 +215,6 @@ public class SinopeGatewayHandler extends ConfigStatusBridgeHandler {
     }
 
     public boolean registerDimmerHandler(SinopeDimmerHandler dimmerHandler) {
-        if (dimmerHandler == null) {
-            logger.error("It's not allowed to pass a null dimmerHandler.");
-            return false;
-        }
         return dimmerHandlers.add(dimmerHandler);
     }
 
