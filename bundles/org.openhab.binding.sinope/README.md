@@ -106,9 +106,10 @@ Thermostat devices support some of the following channels:
 
 Dimmer/Switch devices support the following channels:
 
- Channel Type ID         | Item Type   | Description                                                                                                                            
--------------------------|-------------|------------------------------------------------------------------------------------------------------------------------------------|
- dimmerOutputIntensity   | Number (RW) | Output Intensity (0 = OFF, 100 = Full Intensity). For switches, 0 = OFF, 100 = ON                                                  |   
+ Channel Type ID         | Item Type   | Description                                                                                                                                                                                                   |
+-------------------------|-------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+ dimmerOutputIntensity   | Number (RW) | Output Intensity (0 = OFF, 100 = Full Intensity). For switches, 0 = OFF, 100 = ON                                                                                                                             |   
+ lightMode               | Number (RW) | Light Mode (1 = Manual (Hold), 2 = Auto (Schedule), 3 = Random (Simulation of presence), 130 = Bypass Auto (Temporary hold until the next scheduled period)                                                   |    
 
 
 ## Full Example
@@ -134,6 +135,7 @@ Number Room_SetPointMode "Room Set Point Mode" { channel="sinope:thermostat:home
 Number Room_HeatLevel "Room Heating level [%d]" <heating> { channel="sinope:thermostat:home:room:heatingLevel" }
 
 Number Room_Dimmer_OutputIntensity "Dimmer Output Intensity [%d] %%" <light> { channel="sinope:dimmer:home:room:dimmerOutputIntensity" }
+Number Room_Dimmer_LightMode "Dimmer Light Mode [%d] <light> { channel="sinope:dimmer:home:room:lightMode" }
 ```
 
 ### demo.sitemap:
@@ -149,6 +151,7 @@ sitemap demo label="Main Menu"
      Slider item=Room_HeatLevel
 
      Slider item=Room_Dimmer_OutputIntensity label="Dimmer Ouput Intensity"
+     Switch item=Room_Dimmer_LightMode label="Dimmer Light Mode" mappings=[1=Manual, 2=Auto, 3=Random, 130=BypassAuto]
   }
 }
 ```

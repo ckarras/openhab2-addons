@@ -15,6 +15,7 @@ package org.openhab.binding.sinope.handler;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.config.core.Configuration;
+import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.library.types.QuantityType;
 import org.eclipse.smarthome.core.library.unit.SmartHomeUnits;
 import org.eclipse.smarthome.core.thing.*;
@@ -24,7 +25,9 @@ import org.openhab.binding.sinope.SinopeBindingConstants;
 import org.openhab.binding.sinope.internal.config.SinopeConfig;
 import org.openhab.binding.sinope.internal.core.SinopeDataReadRequest;
 import org.openhab.binding.sinope.internal.core.SinopeDataWriteRequest;
+import org.openhab.binding.sinope.internal.core.appdata.SinopeLightModeData;
 import org.openhab.binding.sinope.internal.core.appdata.SinopeOutputIntensityData;
+import org.openhab.binding.sinope.internal.core.appdata.SinopeSetPointModeData;
 import org.openhab.binding.sinope.internal.core.base.SinopeDataAnswer;
 import org.openhab.binding.sinope.internal.util.ByteUtil;
 import org.slf4j.Logger;
@@ -32,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 
 /**
  * The {@link SinopeDimmerHandler} is responsible for handling commands, which are
@@ -59,6 +63,10 @@ public class SinopeDimmerHandler extends BaseThingHandler {
             if (SinopeBindingConstants.CHANNEL_DIMMER_OUTPUTINTENSITY.equals(channelUID.getId()) && command instanceof QuantityType) {
                 setDimmerOutputIntensity(((QuantityType<?>) command).intValue());
             }
+            else if (SinopeBindingConstants.CHANNEL_LIGHTMODE.equals(channelUID.getId()) && command instanceof DecimalType) {
+                setLightMode(((DecimalType) command).intValue());
+            }
+
         } catch (IOException e) {
             logger.debug("Cannot handle command for channel {} because of {}", channelUID.getId(),
                     e.getLocalizedMessage());
@@ -78,8 +86,9 @@ public class SinopeDimmerHandler extends BaseThingHandler {
 
                 SinopeDataAnswer answ = (SinopeDataAnswer) this.getSinopeGatewayHandler().execute(req);
 
+
                 if (answ.getStatus() == DATA_ANSWER) {
-                    int answOutputIntensity = ((SinopeOutputIntensityData) answ.getAppData()).getOutputIntensity();
+                    int answOutputIntensity = (((SinopeOutputIntensityData) answ.getAppData())).getOutputIntensity();
                     updateDimmerOutputIntensity(outputIntensity);
                     logger.debug("Output intensity is now: {} %%", answOutputIntensity);
 
@@ -94,6 +103,34 @@ public class SinopeDimmerHandler extends BaseThingHandler {
             this.getSinopeGatewayHandler().schedulePoll();
         }
 
+    }
+
+    private void setLightMode(int mode) throws UnknownHostException, IOException {
+        getSinopeGatewayHandler().stopPoll();
+        try {
+            if (getSinopeGatewayHandler().connectToBridge()) {
+                logger.debug("Connected to bridge");
+
+                SinopeDataWriteRequest req = new SinopeDataWriteRequest(getSinopeGatewayHandler().newSeq(), deviceId,
+                        new SinopeLightModeData());
+                ((SinopeLightModeData) req.getAppData()).setLightMode((byte) mode);
+
+                SinopeDataAnswer answ = (SinopeDataAnswer) getSinopeGatewayHandler().execute(req);
+
+                if (answ.getStatus() == DATA_ANSWER) {
+                    int answLightMode = (((SinopeLightModeData) answ.getAppData())).getLightMode();
+                    updateLightMode(answLightMode);
+                    logger.debug("Light mode is now : {}", answLightMode);
+                } else {
+                    logger.debug("Cannot Set Light mode, status: {}", answ.getStatus());
+                }
+            } else {
+                logger.debug("Could not connect to bridge to update Light Mode");
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "Cannot connect to bridge");
+            }
+        } finally {
+            getSinopeGatewayHandler().schedulePoll();
+        }
     }
 
     @Override
@@ -118,11 +155,19 @@ public class SinopeDimmerHandler extends BaseThingHandler {
         updateState(SinopeBindingConstants.CHANNEL_DIMMER_OUTPUTINTENSITY, new QuantityType<>(outputIntensity, SmartHomeUnits.PERCENT));
     }
 
+    public void updateLightMode(int lightMode) {
+        updateState(SinopeBindingConstants.CHANNEL_LIGHTMODE, new DecimalType(lightMode));
+    }
+
     public void update() throws IOException {
         if (this.deviceId != null) {
             if (isLinked(SinopeBindingConstants.CHANNEL_DIMMER_OUTPUTINTENSITY)) {
                 this.updateDimmerOutputIntensity(readOutputIntensity());
             }
+            if (isLinked(SinopeBindingConstants.CHANNEL_LIGHTMODE)) {
+                this.updateLightMode(readLightMode());
+            }
+
         } else {
             logger.error("Device id is null for Thing UID: {}", getThing().getUID());
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR);
@@ -137,6 +182,16 @@ public class SinopeDimmerHandler extends BaseThingHandler {
         int intensity = ((SinopeOutputIntensityData) answ.getAppData()).getOutputIntensity();
         logger.debug("Output intensity is : {} %", intensity);
         return intensity;
+    }
+
+    private int readLightMode() throws UnknownHostException, IOException {
+        SinopeDataReadRequest req = new SinopeDataReadRequest(this.getSinopeGatewayHandler().newSeq(), deviceId,
+                new SinopeLightModeData());
+        logger.debug("Reading Light Mode for device id: {}", ByteUtil.toString(deviceId));
+        SinopeDataAnswer answ = (SinopeDataAnswer) this.getSinopeGatewayHandler().execute(req);
+        int lightMode = ((SinopeLightModeData) answ.getAppData()).getLightMode();
+        logger.debug("Light mode is : {}", lightMode);
+        return lightMode;
     }
 
     private void updateDeviceId() {

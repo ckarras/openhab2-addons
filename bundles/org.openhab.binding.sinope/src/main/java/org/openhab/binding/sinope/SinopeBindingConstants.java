@@ -42,6 +42,7 @@ public class SinopeBindingConstants {
     public final static String CHANNEL_OUTTEMP = "outsideTemperature";
 
     public final static String CHANNEL_DIMMER_OUTPUTINTENSITY = "dimmerOutputIntensity";
+    public static final String CHANNEL_LIGHTMODE = "lightMode";
 
     public static final String CONFIG_PROPERTY_HOST = "ipAddress";
     public static final String CONFIG_PROPERTY_PORT = "ipPort";

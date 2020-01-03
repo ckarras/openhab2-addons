@@ -18,27 +18,27 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 /**
- * The Class SinopeOutputIntensityData.
+ * The Class SinopeLightModeData.
  *
  * @author Christos Karras - Initial contribution
  */
 @NonNullByDefault
-public class SinopeOutputIntensityData extends SinopeAppData {
+public class SinopeLightModeData extends SinopeAppData {
 
     /**
      * Instantiates a new sinope set point temp data.
      */
-    public SinopeOutputIntensityData() {
+    public SinopeLightModeData() {
 
-        super(new byte[] { 0x00, 0x00, 0x10, 0x00 }, new byte[] { 0, 0 });
+        super(new byte[] { 0x00, 0x00, 0x10, 0x09 }, new byte[] { 0, 0 });
     }
 
     /**
-     * Gets the dimmer output intensity.
+     * Gets the light mode
      *
-     * @return the dimmer outut intensity (0-100)
+     * @return the light mode: 1 = Manual (Hold), 2 = Auto (Schedule), 3 = Random (simulation of presence), 130 = Bypass Auto (Temporary hold until next scheduled period)
      */
-    public int getOutputIntensity() {
+    public int getLightMode() {
         if (getData() != null) {
             ByteBuffer bb = ByteBuffer.wrap(getData());
             bb.order(ByteOrder.LITTLE_ENDIAN);
@@ -55,15 +55,15 @@ public class SinopeOutputIntensityData extends SinopeAppData {
         StringBuilder sb = new StringBuilder();
         sb.append(super.toString());
         if (getData() != null) {
-            sb.append(String.format("\nOutput intensity %d %%", this.getOutputIntensity()));
+            sb.append(String.format("\nLight mode %d", this.getLightMode()));
         }
         return sb.toString();
     }
 
-    public void setOutputIntensity(int newOutputIntensity) {
+    public void setLightMode(int newLightMode) {
         ByteBuffer bb = ByteBuffer.wrap(getData());
         bb.order(ByteOrder.LITTLE_ENDIAN);
-        bb.put((byte) (newOutputIntensity & 0xFF));
+        bb.put((byte) (newLightMode & 0xFF));
     }
 
 }
