@@ -114,14 +114,14 @@ Dimmer/Switch devices support the following channels:
 
 ## Full Example
 
-In this example setup the Sinopé Gateway is represented as a Bridge **Home** with thermostat **Room**
+In this example setup the Sinopé Gateway is represented as a Bridge **Home** with thermostat **Room** and dimmer "RoomDimmer"
 
 ### demo.things:
 
 ```
 Bridge sinope:gateway:home [ hostname="sinope", gatewayId="1234-4567-1234-1234", apiKey="0x12 0x34 0x56 0x78 0x9A 0xBC 0xDE 0xF0"] {
   thermostat room [ deviceId = "00003586" ]
-  dimmer room [ deviceId = "00003587" ]
+  dimmer roomdimmer [ deviceId = "00003587" ]
 }
 ```
 
@@ -134,8 +134,8 @@ Number Room_SetPoint "Room Set Point [%.2f °C]" <temperature> { channel="sinope
 Number Room_SetPointMode "Room Set Point Mode" { channel="sinope:thermostat:home:room:setpointMode" }
 Number Room_HeatLevel "Room Heating level [%d]" <heating> { channel="sinope:thermostat:home:room:heatingLevel" }
 
-Number Room_Dimmer_OutputIntensity "Dimmer Output Intensity [%d] %%" <light> { channel="sinope:dimmer:home:room:dimmerOutputIntensity" }
-Number Room_Dimmer_LightMode "Dimmer Light Mode [%d] <light> { channel="sinope:dimmer:home:room:lightMode" }
+Number Room_Dimmer_OutputIntensity "Dimmer Output Intensity [%d] %%" <light> { channel="sinope:dimmer:home:roomdimmer:dimmerOutputIntensity" }
+Number Room_Dimmer_LightMode "Dimmer Light Mode [%d] <light> { channel="sinope:dimmer:home:roomdimmer:lightMode" }
 ```
 
 ### demo.sitemap:
